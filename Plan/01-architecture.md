@@ -101,7 +101,7 @@ generation** — both stateless calls behind a thin client wrapper
 | Queue/cache | Redis + Celery or RQ | Async ingestion, caching |
 | PDF extraction | PyMuPDF (+ pdfplumber/Docling for tables) | Fast text + layout |
 | OCR | Tesseract or PaddleOCR | Scanned-page fallback only |
-| Frontend | React / Next.js | Chat, admin, citation viewer |
+| Frontend | React  | Chat, admin, citation viewer |
 | Observability | Prometheus, Grafana, OTel, Sentry | Metrics, traces, errors |
 
 ## 1.7 Environments

@@ -26,10 +26,12 @@ STORAGE_DIR = PROJECT_ROOT / "storage"
 CACHE_DIR = STORAGE_DIR / "cache"
 
 # --- Models (OpenAI) ----------------------------------------------------
-# Embeddings. text-embedding-3-large -> 3072 dims; text-embedding-3-small -> 1536.
-# Env-overridable so you can swap after confirming OpenAI's current lineup.
-EMBED_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-large")
-EMBED_DIM = int(os.getenv("EMBED_DIM", "3072"))  # must match EMBED_MODEL's output
+# Embeddings. Default to 1536 dims because pgvector's HNSW/IVFFlat indexes cap
+# at 2000 dims (text-embedding-3-large's native 3072 is NOT ANN-indexable).
+# Use text-embedding-3-small (native 1536), OR 3-large with dimensions=1536.
+# EMBED_DIM must equal the VECTOR(n) column — lock it before the first migration.
+EMBED_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
+EMBED_DIM = int(os.getenv("EMBED_DIM", "1536"))  # must match EMBED_MODEL's output
 
 # Answer synthesis. Verify the current model id in your OpenAI account before
 # locking; a newer/cheaper model may be preferable.
