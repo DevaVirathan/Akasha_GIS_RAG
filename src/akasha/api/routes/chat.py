@@ -35,6 +35,7 @@ def _citations(retrieved: list[Retrieved]) -> list[Citation]:
             page_start=r.chunk.page_start,
             section=r.chunk.section,
             score=round(r.score, 4),
+            text=r.chunk.text,
         )
         for i, r in enumerate(retrieved, start=1)
     ]

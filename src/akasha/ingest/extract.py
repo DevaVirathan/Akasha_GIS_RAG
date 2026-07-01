@@ -1,12 +1,9 @@
-"""Stage 1 — extract text from PDFs, with OCR fallback for scanned pages.
+"""Stage 1 — extract text from PDFs (path or bytes), OCR fallback for scans.
 
-Strategy (text-first, OCR fallback):
-  1. Try native text extraction per page (fast; works on digital PDFs).
-  2. If a page yields little/no text, rasterize it and OCR it.
-
-OCR needs the Tesseract binary on the system; if it's missing, ocr_page returns
-"" and the page is stored empty rather than failing the whole run. fitz
-(PyMuPDF) is imported lazily so importing this module doesn't require it.
+Text-first: try native extraction; if a page yields little/no text, rasterize
+and OCR it. OCR needs the Tesseract binary; if it's missing, ocr_page returns ""
+and the page is stored empty rather than failing the run. fitz (PyMuPDF) is
+imported lazily.
 """
 
 from __future__ import annotations
@@ -27,12 +24,29 @@ def iter_pdfs(data_dir: Path = DATA_DIR) -> Iterator[Path]:
 
 
 def extract_pdf(pdf_path: Path, max_pages: int | None = None) -> list[PdfPage]:
-    """Return one PdfPage per page (text-first, OCR fallback)."""
+    """Extract from a PDF on disk."""
     import fitz  # PyMuPDF
 
-    folder = pdf_path.parent.name
-    pages: list[PdfPage] = []
     doc = fitz.open(pdf_path)
+    return _extract(doc, pdf_path.name, pdf_path.parent.name, max_pages)
+
+
+def extract_pdf_bytes(
+    data: bytes,
+    *,
+    source_file: str = "upload.pdf",
+    folder: str = "upload",
+    max_pages: int | None = None,
+) -> list[PdfPage]:
+    """Extract from PDF bytes (e.g. downloaded from object storage)."""
+    import fitz  # PyMuPDF
+
+    doc = fitz.open(stream=data, filetype="pdf")
+    return _extract(doc, source_file, folder, max_pages)
+
+
+def _extract(doc, source_file: str, folder: str, max_pages: int | None) -> list[PdfPage]:
+    pages: list[PdfPage] = []
     try:
         for i, page in enumerate(doc):
             if max_pages is not None and i >= max_pages:
@@ -45,7 +59,7 @@ def extract_pdf(pdf_path: Path, max_pages: int | None = None) -> list[PdfPage]:
                     text, is_ocr = ocr_text, True
             pages.append(
                 PdfPage(
-                    source_file=pdf_path.name,
+                    source_file=source_file,
                     folder=folder,
                     page_number=i + 1,
                     text=text,
@@ -58,8 +72,7 @@ def extract_pdf(pdf_path: Path, max_pages: int | None = None) -> list[PdfPage]:
 
 
 def ocr_page(page) -> str:
-    """Rasterize a PyMuPDF page and OCR it. Returns '' if OCR is unavailable
-    (Tesseract/pytesseract/Pillow missing), so ingestion degrades gracefully."""
+    """Rasterize a PyMuPDF page and OCR it. Returns '' if OCR is unavailable."""
     try:
         import io
 

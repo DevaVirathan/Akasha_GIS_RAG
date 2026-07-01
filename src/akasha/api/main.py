@@ -6,6 +6,9 @@ import uuid
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+
+from ..config import CORS_ORIGINS
 
 from .errors import (
     ProblemException,
@@ -13,12 +16,21 @@ from .errors import (
     unhandled_handler,
     validation_handler,
 )
-from .routes import chat, health, search
+from .routes import auth, chat, documents, health, search
 from .security import require_user
 
 
 def create_app() -> FastAPI:
     app = FastAPI(title="Akasha GIS RAG API", version="0.1.0")
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=CORS_ORIGINS,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+        expose_headers=["X-Request-Id"],
+    )
 
     @app.middleware("http")
     async def add_request_id(request: Request, call_next):
@@ -36,6 +48,9 @@ def create_app() -> FastAPI:
     app.include_router(health.router)                                            # open: /healthz, /readyz
     app.include_router(search.router, prefix="/api/v1", dependencies=protected)  # /api/v1/search
     app.include_router(chat.router, prefix="/api/v1", dependencies=protected)    # /api/v1/chat
+    # documents endpoints declare require_admin per-route (returns the principal)
+    app.include_router(documents.router, prefix="/api/v1")                        # /api/v1/documents*
+    app.include_router(auth.router, prefix="/api/v1")                             # /api/v1/auth/dev-login, /me
     return app
 
 

@@ -64,6 +64,16 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 # HS256 secret for signing/verifying dev JWTs (override in .env for anything real).
 JWT_SECRET = os.getenv("JWT_SECRET", "akasha-local-dev-secret-do-not-use-in-production")
 
+# Dev-only login endpoint (issues JWTs without real auth) — MUST stay false in prod.
+DEV_AUTH = os.getenv("DEV_AUTH", "false").lower() in ("1", "true", "yes")
+
+# Browser origins allowed to call the API (the frontend dev server).
+CORS_ORIGINS = [
+    o.strip()
+    for o in os.getenv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",")
+    if o.strip()
+]
+
 
 def require(name: str) -> str:
     """Return an env var's value or raise if unset. Use at call sites that

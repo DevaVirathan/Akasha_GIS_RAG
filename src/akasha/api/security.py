@@ -1,12 +1,14 @@
-"""@thaarei.com JWT auth: identity gate + is_admin, with JIT user provisioning.
+"""@thaarei.com JWT auth: mint (dev) + verify (identity gate) + is_admin.
 
 The token proves identity (a verified @thaarei.com email); the DB is the source
 of truth for authorization (is_admin, is_active). PyJWT and psycopg are imported
-lazily. For local dev, mint tokens with scripts/dev_token.py.
+lazily. For local dev, get a token from POST /api/v1/auth/dev-login (guarded by
+DEV_AUTH) or scripts/dev_token.py.
 """
 
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass
 
 from fastapi import Depends
@@ -31,6 +33,14 @@ class Principal:
     is_admin: bool
 
 
+def mint_token(email: str, *, is_admin: bool = False, ttl_hours: int = 24) -> str:
+    """Sign an HS256 JWT (used by the dev-login endpoint and scripts/dev_token.py)."""
+    import jwt
+
+    payload = {"email": email, "is_admin": is_admin, "exp": int(time.time()) + ttl_hours * 3600}
+    return jwt.encode(payload, JWT_SECRET, algorithm="HS256")
+
+
 def require_user(creds: HTTPAuthorizationCredentials | None = Depends(_bearer)) -> Principal:
     if creds is None:
         raise ProblemException(401, "Not authenticated", "Missing bearer token.", _UNAUTHORIZED)
@@ -48,7 +58,7 @@ def require_user(creds: HTTPAuthorizationCredentials | None = Depends(_bearer)) 
             403, "Forbidden", "Only @thaarei.com accounts may use this system.", _FORBIDDEN
         )
 
-    principal = _provision(email)
+    principal = provision_user(email)
     if principal is None:
         raise ProblemException(403, "Inactive account", "This account is deactivated.", _FORBIDDEN)
     return principal
@@ -60,7 +70,7 @@ def require_admin(principal: Principal = Depends(require_user)) -> Principal:
     return principal
 
 
-def _provision(email: str) -> Principal | None:
+def provision_user(email: str) -> Principal | None:
     """JIT-upsert the user and return authorization from the DB (source of truth)."""
     import psycopg
 
