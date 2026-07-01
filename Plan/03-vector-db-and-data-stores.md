@@ -113,7 +113,7 @@ CREATE TABLE document_versions (
     file_path     TEXT NOT NULL,
     checksum      TEXT NOT NULL,
     status        TEXT NOT NULL DEFAULT 'pending'
-                    CHECK (status IN ('pending','ingesting','qa',
+                    CHECK (status IN ('pending','queued','ingesting','qa',
                                       'published','retired','quarantined')),
     ingested_at   TIMESTAMPTZ,
     created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
