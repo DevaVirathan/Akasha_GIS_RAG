@@ -18,19 +18,34 @@ class PdfPage:
 
 @dataclass
 class Chunk:
-    """A retrieval unit derived from one or more pages."""
+    """A retrieval unit persisted in the `chunks` table (Plan/03, migration 0001).
 
-    id: str
+    Required fields identify the row; the rest are optional metadata. `id` is
+    assigned by the DB (gen_random_uuid) when None. `source_title` is not stored
+    on the chunk — it is populated from documents.title on retrieval.
+    """
+
+    document_id: str
+    document_version_id: str
+    chunk_index: int
     text: str
-    source_file: str
-    folder: str
-    page_number: int
-    metadata: dict = field(default_factory=dict)
+    id: str | None = None
+    page_start: int | None = None
+    page_end: int | None = None
+    chapter: str | None = None
+    section: str | None = None
+    heading_path: str | None = None
+    token_count: int | None = None
+    domain: str | None = None
+    difficulty: str | None = None
+    tags: list[str] = field(default_factory=list)
+    is_ocr: bool = False
+    source_title: str | None = None  # filled on retrieval only
 
 
 @dataclass
 class Retrieved:
-    """A chunk returned by a similarity query, with its score."""
+    """A chunk returned by a similarity query, with its score (cosine similarity)."""
 
     chunk: Chunk
     score: float

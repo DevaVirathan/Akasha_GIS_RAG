@@ -44,6 +44,18 @@ CHUNK_OVERLAP_TOKENS = 120
 # --- Retrieval ----------------------------------------------------------
 TOP_K = 6
 
+# --- Infrastructure (local dev via docker-compose.yml) ------------------
+DATABASE_URL = os.getenv(
+    "DATABASE_URL", "postgresql+psycopg://akasha:akasha@localhost:5432/akasha_rag"
+)
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+
+# Object storage (S3-compatible; MinIO in local dev)
+S3_ENDPOINT_URL = os.getenv("MINIO_ENDPOINT_URL", "http://localhost:9000")
+S3_ACCESS_KEY = os.getenv("MINIO_ROOT_USER", "minioadmin")
+S3_SECRET_KEY = os.getenv("MINIO_ROOT_PASSWORD", "minioadmin")
+S3_BUCKET = os.getenv("MINIO_BUCKET", "akasha-documents")
+
 # --- Secrets ------------------------------------------------------------
 # Never hardcode the key. Put OPENAI_API_KEY in .env (gitignored) and read it
 # at the call site via require("OPENAI_API_KEY").
