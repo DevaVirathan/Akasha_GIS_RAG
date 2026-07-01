@@ -11,9 +11,15 @@ tiktoken>=0.7
 # OpenAI — embeddings + answer generation
 openai>=1.0
 
-# Local, file-based vector store (dev scaffold; production target is
-# PostgreSQL + pgvector — see Plan/03-vector-db-and-data-stores.md)
-chromadb>=0.5
+# Relational metadata + vector store: PostgreSQL + pgvector
+SQLAlchemy>=2.0
+alembic>=1.13
+psycopg[binary]>=3.1
+pgvector>=0.2
+
+# Queue/cache + object-storage (S3/MinIO) clients
+redis>=5.0
+boto3>=1.34
 
 # Config / secrets
 python-dotenv>=1.0
