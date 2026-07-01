@@ -1,0 +1,23 @@
+# Source corpus — 1.2 GB of PDFs, never commit
+Data/
+
+# Generated vector store / indexes
+storage/
+
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

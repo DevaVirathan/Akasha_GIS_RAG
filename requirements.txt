@@ -1,0 +1,22 @@
+# PDF text extraction + page rasterization for OCR fallback
+PyMuPDF>=1.24
+
+# OCR fallback (also requires the Tesseract binary installed on the system)
+pytesseract>=0.3.10
+Pillow>=10.0
+
+# Token-aware chunking
+tiktoken>=0.7
+
+# OpenAI — embeddings + answer generation
+openai>=1.0
+
+# Local, file-based vector store (dev scaffold; production target is
+# PostgreSQL + pgvector — see Plan/03-vector-db-and-data-stores.md)
+chromadb>=0.5
+
+# Config / secrets
+python-dotenv>=1.0
+
+# Dev
+pytest>=8.0
