@@ -79,8 +79,11 @@ def test_add_and_query_orders_by_similarity():
         assert results[0].score == pytest.approx(1.0, abs=1e-3)
 
         # Idempotent: re-adding the same chunks updates in place, no duplicates.
+        # Count only THIS version's rows so the test is robust to other corpus data.
         store.add(chunks, [_unit(0), _unit(1), _unit(2)])
-        assert len(store.query(_unit(0), k=10)) == 3
+        with conn.cursor() as cur:
+            cur.execute("SELECT count(*) FROM chunks WHERE document_version_id = %s", (ver_id,))
+            assert cur.fetchone()[0] == 3
     finally:
         with conn.cursor() as cur:
             cur.execute("DELETE FROM documents WHERE id = %s", (doc_id,))  # cascades
