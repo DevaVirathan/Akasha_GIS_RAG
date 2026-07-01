@@ -61,6 +61,9 @@ S3_BUCKET = os.getenv("MINIO_BUCKET", "akasha-documents")
 # at the call site via require("OPENAI_API_KEY").
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 
+# HS256 secret for signing/verifying dev JWTs (override in .env for anything real).
+JWT_SECRET = os.getenv("JWT_SECRET", "akasha-local-dev-secret-do-not-use-in-production")
+
 
 def require(name: str) -> str:
     """Return an env var's value or raise if unset. Use at call sites that
