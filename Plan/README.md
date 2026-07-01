@@ -41,6 +41,9 @@ detailed domain material (glossary backlog, Akasha answer modes, target users,
 prompt templates, sample questions). It is an earlier draft kept as reference;
 **pillars 01–08 are authoritative where they differ.**
 
+**Frontend addendum:** [09-frontend.md](09-frontend.md) — the React chat UI plan
+(added after the backend was built). API usage: [../docs/api-guide.md](../docs/api-guide.md).
+
 ## Access model
 
 There is **no role hierarchy**. Every active `@thaarei.com` employee is an equal

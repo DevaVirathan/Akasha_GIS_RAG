@@ -24,5 +24,10 @@ boto3>=1.34
 # Config / secrets
 python-dotenv>=1.0
 
+# Backend API
+fastapi>=0.110
+uvicorn[standard]>=0.27
+PyJWT>=2.8
+
 # Dev
 pytest>=8.0
