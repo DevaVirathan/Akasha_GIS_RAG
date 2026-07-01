@@ -38,7 +38,7 @@ _are you a current thaarei.com employee?_ This is enforced in **three layers**
    so no external account can even obtain a token. This is the primary gate.
 2. **Application** — on every request the API validates the JWT and rejects any
    token whose `email` is not a verified `@thaarei.com` address
-   ([05-security.md](05-security.md#52-authentication--the-thaareicom-gate)).
+   ([05-security.md](05-security.md#51-authentication--the-thaareicom-gate)).
 3. **Database** — a `CHECK` constraint makes a non-`@thaarei.com` row
    physically un-insertable, so even a bug or bad seed can't create a foreign
    account.
@@ -80,7 +80,7 @@ CREATE TABLE users (
     -- Hard domain gate: only employee_name@thaarei.com may exist. Rejects any
     -- other domain and subdomains (e.g. @sub.thaarei.com) by design.
     CONSTRAINT users_thaarei_domain
-        CHECK (email ~* '^[a-z0-9._%+-]+@thaarei\.com$')
+        CHECK (email ~* '^[^@\s]+@thaarei\.com$')
 );
 CREATE TRIGGER trg_users_updated BEFORE UPDATE ON users
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();

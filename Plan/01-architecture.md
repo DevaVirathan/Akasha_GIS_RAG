@@ -8,8 +8,9 @@
   book + page. No citation → no claim.
 - **Own the data plane.** OpenAI is a stateless generation/embedding dependency;
   all documents, metadata, vectors, and logs live in stores the team controls.
-- **Permission-aware retrieval.** Access control is enforced _before_ retrieval,
-  not bolted on after, so users only ever see chunks they're allowed to.
+- **Single-domain access.** Only active `@thaarei.com` employees can use the
+  system; there is no role hierarchy, so every employee has equal read access to
+  the approved corpus.
 - **Stateless app tier, stateful data tier.** API/workers scale horizontally;
   state is in PostgreSQL, object storage, and Redis.
 - **Every model id is config.** No provider model name is hardcoded in logic
@@ -57,7 +58,7 @@ flowchart TD
 | RAG orchestrator | Query rewrite → filter → hybrid retrieve → rerank → generate → cite | Python service module |
 | Document service | Upload, metadata registration, versioning, governance state | FastAPI + PostgreSQL |
 | Ingestion workers | Extract → OCR → chunk → embed → upsert (async, resumable) | Celery/RQ on Redis |
-| Metadata + vector DB | Relational metadata, ACLs, chunks, embeddings, logs | PostgreSQL + pgvector |
+| Metadata + vector DB | Relational metadata, identity, chunks, embeddings, logs | PostgreSQL + pgvector |
 | Object storage | Raw PDFs + extracted/normalized text | S3-compatible (MinIO on-prem / S3/GCS cloud) |
 | Cache/queue | Ingestion jobs, response/embedding cache | Redis |
 | Observability | Metrics, traces, logs, LLM traces, errors | Prometheus/Grafana, OTel, Sentry |
@@ -69,8 +70,8 @@ store raw PDF → extract text (OCR fallback) → clean/normalize → detect
 structure → chunk with provenance → OpenAI embeddings → upsert vectors +
 metadata → ingestion QA → publish. Detail: [02](02-ingestion-pipeline.md).
 
-**Query (online):** authenticate → resolve caller's permission scope → rewrite
-query → **apply ACL + metadata pre-filter** → hybrid search (vector + keyword)
+**Query (online):** authenticate the `@thaarei.com` caller → rewrite
+query → **apply governance + metadata pre-filter** → hybrid search (vector + keyword)
 → rerank → pack context → OpenAI generation with citation contract → validate
 citations → return answer + sources → log. Detail: [04](04-backend-apis.md).
 
@@ -79,7 +80,7 @@ citations → return answer + sources → log. Detail: [04](04-backend-apis.md).
 | Capability | Requires | Hosted "chat-with-PDF" gives you |
 |------------|----------|----------------------------------|
 | Citation tracking to page | Own chunk table with page/section provenance | Opaque or coarse |
-| Permission filters | Own ACL joined into retrieval query | None / all-or-nothing |
+| `@thaarei.com`-only access + audit | Own identity + audit tables | External accounts / no control |
 | Book-wise & metadata search | Own metadata columns + indexes | Limited |
 | Domain evaluation | Own chunk ids + logs to score retrieval | Not measurable |
 | Cost/latency control | Own embedding cache + model pinning | Fixed |

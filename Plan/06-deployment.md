@@ -61,7 +61,8 @@ and referenced by immutable digest.
 1. Build + push images (digest-pinned) · 2. Deploy to **staging** ·
 3. Run **DB migrations** (Alembic) · 4. **Run the evaluation suite** and
 **gate** on thresholds ([07](07-evaluation.md)) · 5. Smoke-test `/healthz`,
-`/readyz`, one `/chat` · 6. Promote to **prod** (manual approval) with the same
+`/readyz`, one chat message (`POST /conversations/{id}/messages`) · 6. Promote
+to **prod** (manual approval) with the same
 migrate-then-smoke sequence.
 
 Migrations run as an explicit step before app rollout; the fixed `VECTOR(n)`

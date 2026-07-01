@@ -1,5 +1,17 @@
 # Akasha GIS & Remote Sensing RAG Model — Production-Ready Implementation Plan
 
+> **⚠️ Reference snapshot — superseded by pillars 01–08 where they differ.**
+> This is the original end-to-end draft, kept for its domain detail (glossary,
+> answer modes, target users, sample questions, phases). The authoritative
+> design lives in [README.md](README.md) and `01`–`08`. Where this document
+> conflicts, **the pillar docs win** — notably:
+> - **OpenAI-only** for embeddings + generation (no Voyage/Claude). Ignore the
+>   unverified `gpt-5.5` in §24.
+> - **`@thaarei.com` employees only, no role hierarchy** (single `is_admin`
+>   flag) — replaces the RBAC/roles in §19 and the ACL-style schema in §15.
+> - **1536-dim embeddings** (pgvector index ceiling) — the `VECTOR(1536)` and
+>   full schema live in [03](03-vector-db-and-data-stores.md).
+
 ## 1. Executive Summary
 
 Akasha RAG will be an internal domain knowledge assistant for the development team building a crop monitoring / GIS application similar to EOS Crop Monitoring. The goal is to reduce the domain learning gap for software developers, QA engineers, product owners, and GIS analysts by providing citation-backed explanations from approved Remote Sensing and GIS reference PDFs, internal architecture documents, Bhoonidhi API notes, and Akasha application documentation.
@@ -613,12 +625,17 @@ Every chunk should support filters:
 
 ### 16.2 Chat/RAG APIs
 
+> Superseded by the resource-oriented model in [04 §4.2](04-backend-apis.md#42-api-surface):
+> chat is **messages inside a conversation**, and streaming is negotiated with
+> `Accept: text/event-stream` on one endpoint (not a separate `/chat/stream`).
+
 | Method | Endpoint | Purpose |
 |---|---|---|
-| POST | `/api/v1/chat` | Ask question |
+| POST | `/api/v1/conversations` | Start a conversation |
+| GET | `/api/v1/conversations` | List the caller's conversations |
+| GET | `/api/v1/conversations/{id}` | Conversation with its messages |
+| POST | `/api/v1/conversations/{id}/messages` | Ask a question (SSE stream or JSON) |
 | POST | `/api/v1/search` | Search chunks without answer generation |
-| POST | `/api/v1/chat/stream` | Streaming chat answer |
-| GET | `/api/v1/chat/history` | User chat history |
 
 ### 16.3 Glossary APIs
 
@@ -633,7 +650,7 @@ Every chunk should support filters:
 
 | Method | Endpoint | Purpose |
 |---|---|---|
-| POST | `/api/v1/feedback` | Capture user feedback |
+| POST | `/api/v1/messages/{id}/feedback` | Feedback on a specific answer |
 | POST | `/api/v1/evals/run` | Run RAG evaluation set |
 | GET | `/api/v1/evals/results` | View quality metrics |
 | GET | `/api/v1/analytics/usage` | Usage and cost summary |
