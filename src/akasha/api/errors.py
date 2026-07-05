@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import traceback
+
 from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -44,6 +46,12 @@ async def validation_handler(request: Request, exc: RequestValidationError) -> J
 
 
 async def unhandled_handler(request: Request, exc: Exception) -> JSONResponse:
+    print(
+        f"Unhandled error on {request.url.path} "
+        f"rid={getattr(request.state, 'request_id', None)}",
+        flush=True,
+    )
+    traceback.print_exc()
     return _problem(
         request, 500, "Internal server error", "",
         "https://api.akasha/errors/internal",
