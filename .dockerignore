@@ -1,0 +1,18 @@
+# Keep the build context small — Data/ is ~1.2 GB and never belongs in the image.
+Data/
+apps/
+storage/
+.git/
+.venv/
+venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+Plan/
+docs/
+*.md
+.env
+.dockerignore
+Dockerfile

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 import uuid
 
 from fastapi import Depends, FastAPI, Request
@@ -19,7 +20,6 @@ from .errors import (
 from .routes import auth, chat, documents, health, search
 from .security import require_user
 
-
 def create_app() -> FastAPI:
     app = FastAPI(title="Akasha GIS RAG API", version="0.1.0")
 
@@ -34,10 +34,17 @@ def create_app() -> FastAPI:
 
     @app.middleware("http")
     async def add_request_id(request: Request, call_next):
-        rid = request.headers.get("X-Request-Id") or uuid.uuid4().hex
+        rid = request.headers.get("X-Request-Id") or uuid.uuid4().hex[:12]
         request.state.request_id = rid
+        start = time.perf_counter()
         response = await call_next(request)
+        elapsed_ms = int((time.perf_counter() - start) * 1000)
         response.headers["X-Request-Id"] = rid
+        print(
+            f"{request.method:<6} {request.url.path:<42} -> "
+            f"{response.status_code}  {elapsed_ms:>4}ms  rid={rid}",
+            flush=True,
+        )
         return response
 
     app.add_exception_handler(ProblemException, problem_handler)
